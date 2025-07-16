@@ -1,4 +1,3 @@
-
 import os
 import platform
 import subprocess
@@ -8,99 +7,91 @@ from time import sleep
 from tkinter import messagebox, ttk
 
 
-class Toast:
-    def __init__(self, parent, message):
-        self.parent = parent
-        self.message = message
-        
-        # --- Toast 窗口创建与居中 ---
-        self.toast_window = tk.Toplevel(parent)
-        self.toast_window.overrideredirect(True) # 隐藏标题栏
-        self.toast_window.attributes("-alpha", 0.9) # 设置透明度
-        self.toast_window.attributes("-topmost", True) # 保持在最前
-
-        label = tk.Label(self.toast_window, text=self.message, 
-                         bg="#323232", fg="white", 
-                         font=("Arial", 10), 
-                         padx=20, pady=10)
-        label.pack()
-
-        # --- 位置计算 (在父窗口下方) ---
-        parent_x = parent.winfo_x()
-        parent_y = parent.winfo_y()
-        parent_width = parent.winfo_width()
-        parent_height = parent.winfo_height()
-        
-        self.toast_window.update_idletasks()
-        toast_width = self.toast_window.winfo_width()
-        toast_height = self.toast_window.winfo_height()
-
-        x = parent_x + (parent_width // 2) - (toast_width // 2)
-        y = parent_y + parent_height - toast_height - 30 # 距离底部30像素
-
-        self.toast_window.geometry(f'+{x}+{y}')
-        self.toast_window.after(2000, self.destroy)
-
-    def destroy(self):
-        self.toast_window.destroy()
-
 class HdcUdidApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("HarmonyOS UDID 获取工具")
+        self.configure(bg="#f7f7f7")
 
         # --- 窗口居中 ---
-        window_width = 600
-        window_height = 200
+        window_width = 500
+        window_height = 220
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         center_x = int(screen_width / 2 - window_width / 2)
         center_y = int(screen_height / 2 - window_height / 2)
         self.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+        self.resizable(False, False)
 
-        self.resizable(True, False)
-        try:
-            self.iconbitmap("icon.ico")
-        except tk.TclError:
-            print("icon.ico not found, skipping.")
-            
+        # --- 统一字体 ---
+        default_font = ("Segoe UI", 11)
+        title_font = ("Segoe UI", 13, "bold")
+        mono_font = ("Segoe UI", 12)  
+
+        style = ttk.Style(self)
+        style.theme_use('clam')
+        # 按钮圆角+禁用时字体白色
+        style.configure('Rounded.TButton',
+                        font=default_font,
+                        padding=6,
+                        relief="flat",
+                        background="#4F8EF7",
+                        foreground="white",
+                        borderwidth=0)
+        style.map('Rounded.TButton',
+                  background=[('active', '#2566d8'), ('disabled', "#7ba6f1")],
+                  foreground=[('disabled', 'white')])
+        # Combobox圆角模拟
+        style.configure('Rounded.TCombobox',
+                        font=default_font,
+                        fieldbackground="#fff"
+                        )
+        style.map('Rounded.TCombobox',
+                  fieldbackground=[('readonly', '#f7f7f7')])
+        style.configure('TLabel', font=default_font, background="#f7f7f7")
+
         self.hdc_path = self.find_hdc_executable()
-        self.status_value = tk.StringVar(value="请点击刷新以获取设备列表")
+        self.status_value = tk.StringVar(value="请刷新设备")
 
-        # --- UI 布局 (整体居中) ---
-        container = tk.Frame(self)
-        container.pack(expand=True, fill=tk.BOTH, padx=20, pady=10)
+        # --- UI 布局 ---
+        container = tk.Frame(self, bg="#f7f7f7")
+        container.pack(expand=True, fill=tk.BOTH, padx=30, pady=18)
 
         # --- 设备选择 ---
-        device_frame = tk.Frame(container)
-        device_frame.pack(fill='x', pady=(5,0))
-        tk.Label(device_frame, text="选择设备:", font=("Arial", 12)).pack(side=tk.LEFT)
-        self.device_combobox = ttk.Combobox(device_frame, state="readonly", font=("Arial", 10))
-        self.device_combobox.pack(side=tk.LEFT, fill='x', expand=True, padx=10)
+        device_frame = tk.Frame(container, bg="#f7f7f7")
+        device_frame.pack(fill='x', pady=(0, 8))
+        tk.Label(device_frame, text="设备", font=title_font, bg="#f7f7f7").pack(side=tk.LEFT)
+        self.device_combobox = ttk.Combobox(device_frame, state="readonly", font=default_font, style='Rounded.TCombobox')
+        self.device_combobox.pack(side=tk.LEFT, fill='x', expand=True, padx=12)
         self.device_combobox.bind("<<ComboboxSelected>>", self.on_device_select)
 
         # --- UDID 显示 ---
-        tk.Label(container, text="设备 UDID:", font=("Arial", 12)).pack(pady=(10, 0))
-        self.udid_text = tk.Text(container, font=("Courier", 14), wrap=tk.WORD, height=5, relief=tk.FLAT, bg=self.cget('bg'))
-        self.udid_text.pack(pady=5, fill="x", expand=True)
+        tk.Label(container, text="UDID", font=title_font, bg="#f7f7f7").pack(pady=(0, 2))
+        self.udid_text = tk.Text(container, font=mono_font, wrap=tk.WORD, height=2, relief=tk.FLAT,
+                                 bg="#f7f7f7", bd=0, highlightthickness=0, fg="#333333")
+        self.udid_text.pack(pady=4, fill="x", expand=True)
         self.udid_text.tag_configure("center", justify='center')
         self.udid_text.insert("1.0", "请先选择设备", "center")
         self.udid_text.config(state="disabled")
+        self.udid_text.bind("<Button-3>", self.show_udid_menu)  # 添加右键菜单绑定
 
-        tk.Label(container, textvariable=self.status_value, font=("Arial", 10), fg="grey").pack(pady=(0, 10))
+        # 创建右键菜单
+        self.udid_menu = tk.Menu(self.udid_text, tearoff=0)
+        self.udid_menu.add_command(label="复制", command=self.copy_udid_selection)
+
+        # --- 状态栏 ---
+        status_bar = tk.Label(container, textvariable=self.status_value, font=("Segoe UI", 9), fg="#888", bg="#f7f7f7", anchor="w")
+        status_bar.pack(fill='x', pady=(2, 8))
 
         # --- 按钮区域 ---
-        button_frame = tk.Frame(container)
-        button_frame.pack(pady=5)
-
-        self.refresh_button = tk.Button(button_frame, text="刷新设备", command=self.refresh_devices, width=12)
-        self.refresh_button.pack(side=tk.LEFT, padx=10)
-
-        self.copy_button = tk.Button(button_frame, text="复制 UDID", command=self.copy_udid, width=12, state=tk.DISABLED)
-        self.copy_button.pack(side=tk.LEFT, padx=10)
-
-        self.exit_button = tk.Button(button_frame, text="退出", command=self.on_exit, width=12)
-        self.exit_button.pack(side=tk.LEFT, padx=10)
+        button_frame = tk.Frame(container, bg="#f7f7f7")
+        button_frame.pack(pady=2)
+        self.refresh_button = ttk.Button(button_frame, text="刷新设备", command=self.refresh_devices, width=12, style='Rounded.TButton')
+        self.refresh_button.pack(side=tk.LEFT, padx=8)
+        self.copy_button = ttk.Button(button_frame, text="复制 UDID", command=self.copy_udid, width=12, state=tk.DISABLED, style='Rounded.TButton')
+        self.copy_button.pack(side=tk.LEFT, padx=8)
+        self.exit_button = ttk.Button(button_frame, text="退出", command=self.on_exit, width=12, style='Rounded.TButton')
+        self.exit_button.pack(side=tk.LEFT, padx=8)
 
         self.protocol("WM_DELETE_WINDOW", self.on_exit)
         self.refresh_devices()
@@ -121,6 +112,7 @@ class HdcUdidApp(tk.Tk):
                 [self.hdc_path] + command,
                 capture_output=True, text=True, encoding='utf-8', check=False, startupinfo=startupinfo
             )
+            print('----'+process.stdout.strip(), process.stderr.strip())
             return process.stdout.strip(), process.stderr.strip()
         except Exception as e:
             print(f"Error running command: {command} - {e}")
@@ -136,8 +128,6 @@ class HdcUdidApp(tk.Tk):
         threading.Thread(target=self.fetch_devices_task, daemon=True).start()
 
     def fetch_devices_task(self):
-        self.run_hdc_command(["start"])
-        sleep(1)    
         list_stdout, _ = self.run_hdc_command(["list", "targets"])
         device_sns = list_stdout.splitlines()
         if not device_sns:
@@ -182,7 +172,7 @@ class HdcUdidApp(tk.Tk):
             except (IndexError, ValueError):
                 return "获取UDID失败", f"设备返回无效结果: {stdout}"
         elif stdout:
-            return stdout.strip(), "获取到部分信息(请验证)"
+            return stdout.strip(), ""
         else:
             if "not found" in stderr.lower():
                 return "获取UDID失败", "错误: 设备上未找到 'bm' 工具。"
@@ -211,11 +201,34 @@ class HdcUdidApp(tk.Tk):
             self.show_toast("UDID 已复制到剪贴板！")
 
     def show_toast(self, message):
-        Toast(self, message)
+        # 水平居中弹窗
+        toast = tk.Toplevel(self)
+        toast.overrideredirect(True)
+        toast.configure(bg="#333333")
+        toast.attributes("-topmost", True)
+        x = self.winfo_x() + (self.winfo_width() - 180) // 2
+        y = self.winfo_y() + self.winfo_height() - 80
+        toast.geometry(f"180x36+{x}+{y}")
+        label = tk.Label(toast, text=message, fg="white", bg="#333333", font=("Segoe UI", 10))
+        label.pack(expand=True, fill="both")
+        toast.after(1500, toast.destroy)
+
+    def show_udid_menu(self, event):
+        try:
+            self.udid_menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            self.udid_menu.grab_release()
+
+    def copy_udid_selection(self):
+        try:
+            selected = self.udid_text.get(tk.SEL_FIRST, tk.SEL_LAST)
+        except tk.TclError:
+            selected = self.udid_text.get("1.0", tk.END).strip()
+        if selected:
+            self.clipboard_clear()
+            self.clipboard_append(selected)
 
     def on_exit(self):
-        print("Killing HDC server...")
-        self.run_hdc_command(["kill"])
         self.destroy()
 
 if __name__ == "__main__":
