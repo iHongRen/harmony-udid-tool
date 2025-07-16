@@ -4,13 +4,28 @@ import subprocess
 import threading
 import tkinter as tk
 from time import sleep
-from tkinter import messagebox, ttk
+from tkinter import ttk
 
 
 class HdcUdidApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("HarmonyOS UDID 获取工具")
+
+  
+        menubar = tk.Menu(self)
+        if platform.system() == "Darwin":
+            app_menu = tk.Menu(menubar, name='apple')
+            menubar.add_cascade(menu=app_menu)
+            app_menu.add_command(label="关于", command=self.show_about)
+        else:
+            helpmenu = tk.Menu(menubar, tearoff=0)
+            helpmenu.add_command(label="关于", command=self.show_about)
+            menubar.add_cascade(label="帮助", menu=helpmenu)
+       
+        self.config(menu=menubar)
+
+
         self.configure(bg="#f7f7f7")
 
         # --- 窗口居中 ---
@@ -142,7 +157,6 @@ class HdcUdidApp(tk.Tk):
                 [self.hdc_path] + command,
                 capture_output=True, text=True, encoding='utf-8', check=False, startupinfo=startupinfo
             )
-            print('----'+process.stdout.strip(), process.stderr.strip())
             return process.stdout.strip(), process.stderr.strip()
         except Exception as e:
             print(f"Error running command: {command} - {e}")
@@ -150,7 +164,7 @@ class HdcUdidApp(tk.Tk):
 
     def refresh_devices(self):
         self.status_value.set("正在刷新设备列表...")
-        self.device_combobox.set('')
+        # self.device_combobox.set('')
         self.device_combobox.config(state=tk.DISABLED)
         self.refresh_button.config(state=tk.DISABLED)
         self.copy_button.config(state=tk.DISABLED)
@@ -166,12 +180,19 @@ class HdcUdidApp(tk.Tk):
         self.after(0, self.update_device_list, device_sns, "请从列表中选择一个设备")
 
     def update_device_list(self, device_names, status):
+        # 记录当前选中项
+        current = self.device_combobox.get()
         self.device_combobox['values'] = device_names
         if device_names:
             self.device_combobox.config(state="readonly")
-            self.device_combobox.set(device_names[0])
+            # 如果当前选中项还在新列表里，则保持不变，否则选中第一个
+            if current in device_names:
+                self.device_combobox.set(current)
+            else:
+                self.device_combobox.set(device_names[0])
             self.on_device_select(None) # 自动触发第一个设备的选择事件
         else:
+            # 只有真正没有设备时才清空
             self.device_combobox.set('')
             self.device_combobox.config(state="disabled")
             self.update_ui_text("未检测到设备")
@@ -185,6 +206,10 @@ class HdcUdidApp(tk.Tk):
             self.copy_button.config(state=tk.DISABLED)
             self.update_ui_text("...")
             threading.Thread(target=self.fetch_udid_task, args=(selected_display_name,), daemon=True).start()
+        # 取消 Combobox 的选中高亮
+        self.device_combobox.selection_clear()
+        self.device_combobox.icursor(0)
+        self.focus()  # 让 Combobox 失去焦点
 
     def fetch_udid_task(self, selected_display_name):
         udid_stdout, udid_stderr = self.run_hdc_command(["-t", selected_display_name, "shell", "bm", "get", "-u"])
@@ -260,6 +285,37 @@ class HdcUdidApp(tk.Tk):
 
     def on_exit(self):
         self.destroy()
+
+    def show_about(self):
+        about = tk.Toplevel(self)
+        about.title("关于")
+        about.geometry("320x180")
+        about.resizable(False, False)
+        
+        # 标题
+        tk.Label(about, text="HarmonyOS UDID 获取工具", font=("Arial", 13, "bold")).pack(pady=(20, 5))
+        tk.Label(about, text="版本：v1.0.0", font=("Arial", 11)).pack(pady=2)
+        tk.Label(about, text="作者：@仙银", font=("Arial", 11)).pack(pady=2)
+        
+        # 链接标签 - 显示为蓝色并添加下划线
+        link = tk.Label(
+            about, 
+            text="https://github.com/iHongRen/hdc-uuid-tool", 
+            font=("Arial", 10, "underline"),
+            fg="#0057ff",  # 链接蓝
+            cursor="hand"  # 鼠标悬停时显示手型
+        )
+        link.pack(pady=(10, 0))
+        
+        # 绑定点击事件 - 使用默认浏览器打开链接
+        def open_link(event):
+            import webbrowser
+            webbrowser.open_new("https://github.com/iHongRen/hdc-uuid-tool")
+        
+        link.bind("<Button-1>", open_link)
+        link.bind("<Enter>", lambda e: link.config(fg="#1e1eff"))  # 鼠标悬停时颜色加深
+        link.bind("<Leave>", lambda e: link.config(fg="#0057ff"))  # 鼠标离开时恢复原色
+
 
 if __name__ == "__main__":
     app = HdcUdidApp()
