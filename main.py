@@ -11,8 +11,9 @@ class HdcUdidApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("HarmonyOS UDID 获取工具")
+        # --- 设置图标 ---
+        self.set_app_icon()
 
-  
         menubar = tk.Menu(self)
         if platform.system() == "Darwin":
             app_menu = tk.Menu(menubar, name='apple')
@@ -140,6 +141,33 @@ class HdcUdidApp(tk.Tk):
 
         self.protocol("WM_DELETE_WINDOW", self.on_exit)
         self.refresh_devices()
+
+    def set_app_icon(self):
+        """跨平台设置应用图标"""
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        if platform.system() == "Windows":
+            # Windows 需要 .ico 格式
+            icon_path = os.path.join(script_dir, "icon.ico")
+            self.iconbitmap(default=icon_path)
+            
+        elif platform.system() == "Darwin":
+            # macOS 下可以尝试使用 iconphoto，但主要依赖打包时的配置
+            icon_path = os.path.join(script_dir, "icon.icns")
+            try:
+                icon = tk.PhotoImage(file=icon_path)
+                self.iconphoto(True, icon)
+            except:
+                pass  # macOS 主要通过打包配置图标
+                
+        else:  # Linux 及其他系统
+            # Linux 支持 .png 格式
+            icon_path = os.path.join(script_dir, "icon.png")
+            try:
+                icon = tk.PhotoImage(file=icon_path)
+                self.iconphoto(True, icon)
+            except:
+                pass  # 失败则使用默认图标
 
     def find_hdc_executable(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
