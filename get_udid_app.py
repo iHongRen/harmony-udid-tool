@@ -24,9 +24,18 @@ class HdcUdidApp(tk.Tk):
         self.resizable(False, False)
 
         # --- 统一字体 ---
-        default_font = ("Segoe UI", 11)
-        title_font = ("Segoe UI", 13, "bold")
-        mono_font = ("Segoe UI", 12)  
+        default_font = ("Arial", 11)
+        title_font = ("Arial", 13, "bold")
+
+        # 颜色常量定义
+        COLOR_PRIMARY = "#4F8EF7"        # 主色调-蓝色
+        COLOR_PRIMARY_DARK = "#2566d8"   # 主色调深色(悬停)
+        COLOR_PRIMARY_LIGHT = "#7ba6f1"  # 主色调浅色(禁用)
+        COLOR_BACKGROUND = "#f7f7f7"     # 背景色
+        COLOR_FOREGROUND = "#333333"     # 前景色
+        COLOR_DISABLED = "#999999"       # 禁用文本色
+        COLOR_BORDER = "#cccccc"         # 边框色
+        COLOR_SELECTION = "#4a86e8"      # 选中状态色
 
         style = ttk.Style(self)
         style.theme_use('clam')
@@ -35,40 +44,53 @@ class HdcUdidApp(tk.Tk):
                         font=default_font,
                         padding=6,
                         relief="flat",
-                        background="#4F8EF7",
+                        background=COLOR_PRIMARY,
                         foreground="white",
                         borderwidth=0)
         style.map('Rounded.TButton',
-                  background=[('active', '#2566d8'), ('disabled', "#7ba6f1")],
+                  background=[('active', COLOR_PRIMARY_DARK), ('disabled', COLOR_PRIMARY_LIGHT)],
                   foreground=[('disabled', 'white')])
-        # Combobox圆角模拟
+        
+        # Combobox 样式 - 增强圆角模拟和交互
         style.configure('Rounded.TCombobox',
+                        padding=2,
                         font=default_font,
-                        fieldbackground="#fff"
-                        )
+                        fieldbackground="white",
+                        background=COLOR_BACKGROUND,
+                        relief="flat",
+                        bordercolor=COLOR_BORDER,
+                        arrowcolor=COLOR_FOREGROUND,
+                        selectbackground=COLOR_SELECTION,
+                        selectforeground="white")
+
         style.map('Rounded.TCombobox',
-                  fieldbackground=[('readonly', '#f7f7f7')])
-        style.configure('TLabel', font=default_font, background="#f7f7f7")
+                fieldbackground=[('focus', 'white'), 
+                                ('readonly', COLOR_BACKGROUND)],
+                background=[('active', COLOR_BACKGROUND)],
+                bordercolor=[('focus', COLOR_PRIMARY)],
+                arrowcolor=[('disabled', COLOR_DISABLED)])
+        
+        style.configure('TLabel', font=default_font, background=COLOR_BACKGROUND)
 
         self.hdc_path = self.find_hdc_executable()
         self.status_value = tk.StringVar(value="请刷新设备")
 
         # --- UI 布局 ---
-        container = tk.Frame(self, bg="#f7f7f7")
+        container = tk.Frame(self, bg=COLOR_BACKGROUND)
         container.pack(expand=True, fill=tk.BOTH, padx=30, pady=18)
 
         # --- 设备选择 ---
-        device_frame = tk.Frame(container, bg="#f7f7f7")
+        device_frame = tk.Frame(container, bg=COLOR_BACKGROUND)
         device_frame.pack(fill='x', pady=(0, 8))
-        tk.Label(device_frame, text="设备", font=title_font, bg="#f7f7f7").pack(side=tk.LEFT)
+        tk.Label(device_frame, text="设备", font=title_font, bg=COLOR_BACKGROUND).pack(side=tk.LEFT)
         self.device_combobox = ttk.Combobox(device_frame, state="readonly", font=default_font, style='Rounded.TCombobox')
         self.device_combobox.pack(side=tk.LEFT, fill='x', expand=True, padx=12)
         self.device_combobox.bind("<<ComboboxSelected>>", self.on_device_select)
 
         # --- UDID 显示 ---
-        tk.Label(container, text="UDID", font=title_font, bg="#f7f7f7").pack(pady=(0, 2))
-        self.udid_text = tk.Text(container, font=mono_font, wrap=tk.WORD, height=2, relief=tk.FLAT,
-                                 bg="#f7f7f7", bd=0, highlightthickness=0, fg="#333333")
+        tk.Label(container, text="UDID", font=title_font, bg=COLOR_BACKGROUND).pack(pady=(0, 2))
+        self.udid_text = tk.Text(container, font=default_font, wrap=tk.WORD, height=2, relief=tk.FLAT,
+                                bg=COLOR_BACKGROUND, bd=0, highlightthickness=0, fg=COLOR_FOREGROUND)
         self.udid_text.pack(pady=4, fill="x", expand=True)
         self.udid_text.tag_configure("center", justify='center')
         self.udid_text.insert("1.0", "请先选择设备", "center")
@@ -80,18 +102,26 @@ class HdcUdidApp(tk.Tk):
         self.udid_menu.add_command(label="复制", command=self.copy_udid_selection)
 
         # --- 状态栏 ---
-        status_bar = tk.Label(container, textvariable=self.status_value, font=("Segoe UI", 9), fg="#888", bg="#f7f7f7", anchor="w")
+        status_bar = tk.Label(container, textvariable=self.status_value, font=("Arial", 9), fg="#888", bg=COLOR_BACKGROUND, anchor="w")
         status_bar.pack(fill='x', pady=(2, 8))
 
         # --- 按钮区域 ---
-        button_frame = tk.Frame(container, bg="#f7f7f7")
-        button_frame.pack(pady=2)
-        self.refresh_button = ttk.Button(button_frame, text="刷新设备", command=self.refresh_devices, width=12, style='Rounded.TButton')
-        self.refresh_button.pack(side=tk.LEFT, padx=8)
-        self.copy_button = ttk.Button(button_frame, text="复制 UDID", command=self.copy_udid, width=12, state=tk.DISABLED, style='Rounded.TButton')
-        self.copy_button.pack(side=tk.LEFT, padx=8)
-        self.exit_button = ttk.Button(button_frame, text="退出", command=self.on_exit, width=12, style='Rounded.TButton')
-        self.exit_button.pack(side=tk.LEFT, padx=8)
+        button_frame = tk.Frame(container, bg=COLOR_BACKGROUND)
+        button_frame.pack(fill='x', pady=2)  # 使用 fill='x' 让按钮区域横向填充
+
+        # 使用 grid 布局并设置权重，让三个按钮均分空间
+        button_frame.columnconfigure(0, weight=1)
+        button_frame.columnconfigure(1, weight=1)
+        button_frame.columnconfigure(2, weight=1)
+
+        self.refresh_button = ttk.Button(button_frame, text="刷新设备", command=self.refresh_devices, style='Rounded.TButton')
+        self.refresh_button.grid(row=0, column=0, padx=8, pady=8, sticky='ew')  # 使用 sticky='ew' 实现左右对齐
+
+        self.copy_button = ttk.Button(button_frame, text="复制 UDID", command=self.copy_udid, state=tk.DISABLED, style='Rounded.TButton')
+        self.copy_button.grid(row=0, column=1, padx=8, pady=8, sticky='ew')  # 使用 sticky='ew' 实现左右对齐
+
+        self.exit_button = ttk.Button(button_frame, text="退出", command=self.on_exit, style='Rounded.TButton')
+        self.exit_button.grid(row=0, column=2, padx=8, pady=8, sticky='ew')  # 使用 sticky='ew' 实现左右对齐
 
         self.protocol("WM_DELETE_WINDOW", self.on_exit)
         self.refresh_devices()
@@ -198,7 +228,7 @@ class HdcUdidApp(tk.Tk):
         if current_udid and "失败" not in current_udid and "未检测" not in current_udid and "..." not in current_udid:
             self.clipboard_clear()
             self.clipboard_append(current_udid)
-            self.show_toast("UDID 已复制到剪贴板！")
+            self.show_toast("UDID 已复制到剪贴板")
 
     def show_toast(self, message):
         # 水平居中弹窗
@@ -206,10 +236,10 @@ class HdcUdidApp(tk.Tk):
         toast.overrideredirect(True)
         toast.configure(bg="#333333")
         toast.attributes("-topmost", True)
-        x = self.winfo_x() + (self.winfo_width() - 180) // 2
-        y = self.winfo_y() + self.winfo_height() - 80
-        toast.geometry(f"180x36+{x}+{y}")
-        label = tk.Label(toast, text=message, fg="white", bg="#333333", font=("Segoe UI", 10))
+        x = self.winfo_x() + (self.winfo_width() - 140) // 2
+        y = self.winfo_y() + self.winfo_height() - 60
+        toast.geometry(f"140x30+{x}+{y}")
+        label = tk.Label(toast, text=message, fg="white", bg="#333333", font=("Arial", 9))
         label.pack(expand=True, fill="both")
         toast.after(1500, toast.destroy)
 
