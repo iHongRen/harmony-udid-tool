@@ -19,7 +19,7 @@ OPTIONS = {
     "packages": [],
     'includes': ['tkinter'],
     "excludes": ["wheel"],
-    # "resources": ["hdc","libusb_shared.dylib"],  # 添加这一行
+    "resources": ["hdc","libusb_shared.dylib"],  # 添加这一行
     "strip": False
 }
 

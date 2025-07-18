@@ -143,36 +143,52 @@ class HdcUdidApp(tk.Tk):
         self.protocol("WM_DELETE_WINDOW", self.on_exit)
         self.refresh_devices()
 
+    def get_resource_path(self, relative_path):
+        """获取资源文件的绝对路径，兼容 PyInstaller 打包"""
+        try:
+            # PyInstaller 打包后的临时目录
+            base_path = sys._MEIPASS
+        except AttributeError:
+            # 开发环境
+            base_path = os.path.dirname(os.path.abspath(__file__))
+        return os.path.join(base_path, relative_path)
+
     def set_app_icon(self):
         """跨平台设置应用图标"""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        
         if platform.system() == "Windows":
             # Windows 需要 .ico 格式
-            icon_path = os.path.join(script_dir, "icon.ico")
-            self.iconbitmap(default=icon_path)
+            icon_path = self.get_resource_path("icon.ico")
+            if os.path.exists(icon_path):
+                self.iconbitmap(default=icon_path)
             
         elif platform.system() == "Darwin":
             # macOS 下可以尝试使用 iconphoto，但主要依赖打包时的配置
-            icon_path = os.path.join(script_dir, "icon.icns")
+            icon_path = self.get_resource_path("icon.png")
             try:
-                icon = tk.PhotoImage(file=icon_path)
-                self.iconphoto(True, icon)
+                if os.path.exists(icon_path):
+                    icon = tk.PhotoImage(file=icon_path)
+                    self.iconphoto(True, icon)
             except:
                 pass  # macOS 主要通过打包配置图标
                 
         else:  # Linux 及其他系统
             # Linux 支持 .png 格式
-            icon_path = os.path.join(script_dir, "icon.png")
+            icon_path = self.get_resource_path("icon.png")
             try:
-                icon = tk.PhotoImage(file=icon_path)
-                self.iconphoto(True, icon)
+                if os.path.exists(icon_path):
+                    icon = tk.PhotoImage(file=icon_path)
+                    self.iconphoto(True, icon)
             except:
                 pass  # 失败则使用默认图标
 
     def find_hdc_executable(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(current_dir, 'hdc')
+        hdc_path = self.get_resource_path('hdc')
+        
+        # 检查 hdc 文件是否存在
+        if not os.path.isfile(hdc_path):
+            raise FileNotFoundError(f"hdc executable not found at {hdc_path}")
+        
+        return hdc_path 
 
     def run_hdc_command(self, command):
         try:
@@ -184,8 +200,9 @@ class HdcUdidApp(tk.Tk):
             # 设置动态库搜索路径
             env = os.environ.copy()
             if platform.system() == "Darwin":
-                # macOS 动态库路径
-                env["DYLD_LIBRARY_PATH"] = hdc_path
+                # macOS 动态库路径 - 使用资源目录而不是 hdc 文件路径
+                lib_dir = os.path.dirname(self.get_resource_path('libusb_shared.dylib'))
+                env["DYLD_LIBRARY_PATH"] = lib_dir
                 # 强制加载指定路径的库（即使系统已有同名库）
                 env["DYLD_FORCE_FLAT_NAMESPACE"] = "1"
 
@@ -214,7 +231,6 @@ class HdcUdidApp(tk.Tk):
         threading.Thread(target=self.fetch_devices_task, daemon=True).start()
 
     def fetch_devices_task(self):
-        v, _ = self.run_hdc_command(["-v"])
         list_stdout, _ = self.run_hdc_command(["list", "targets"])
         device_sns = list_stdout.splitlines()
         if not device_sns:
