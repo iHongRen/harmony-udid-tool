@@ -1,6 +1,7 @@
 import os
 import platform
 import subprocess
+import sys
 import threading
 import tkinter as tk
 from time import sleep
@@ -171,25 +172,38 @@ class HdcUdidApp(tk.Tk):
 
     def find_hdc_executable(self):
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(current_dir, 'hdc-tool', 'hdc')
+        return os.path.join(current_dir, 'hdc')
 
     def run_hdc_command(self, command):
         try:
+            hdc_path = self.find_hdc_executable()
             if platform.system() != "Windows":
-                os.chmod(self.hdc_path, 0o755)
+                if not os.access(hdc_path, os.X_OK):
+                    os.chmod(hdc_path, 0o755)
+            
+            # 设置动态库搜索路径
+            env = os.environ.copy()
+            if platform.system() == "Darwin":
+                # macOS 动态库路径
+                env["DYLD_LIBRARY_PATH"] = hdc_path
+                # 强制加载指定路径的库（即使系统已有同名库）
+                env["DYLD_FORCE_FLAT_NAMESPACE"] = "1"
+
             startupinfo = None
             if platform.system() == "Windows":
                 startupinfo = subprocess.STARTUPINFO()
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             process = subprocess.run(
-                [self.hdc_path] + command,
+                [hdc_path] + command,
                 capture_output=True, text=True, encoding='utf-8', check=False, startupinfo=startupinfo
             )
+            print(f"Command: {' '.join([hdc_path] + command)}")
+            print(f"process: {process}")
+          
             return process.stdout.strip(), process.stderr.strip()
         except Exception as e:
             print(f"Error running command: {command} - {e}")
             return None, str(e)
-
     def refresh_devices(self):
         self.status_value.set("正在刷新设备列表...")
         # self.device_combobox.set('')
@@ -200,6 +214,7 @@ class HdcUdidApp(tk.Tk):
         threading.Thread(target=self.fetch_devices_task, daemon=True).start()
 
     def fetch_devices_task(self):
+        v, _ = self.run_hdc_command(["-v"])
         list_stdout, _ = self.run_hdc_command(["list", "targets"])
         device_sns = list_stdout.splitlines()
         if not device_sns:
