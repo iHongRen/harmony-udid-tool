@@ -1,13 +1,12 @@
 # HarmonyOS UDID 获取工具
 
 <div align="center">
-
 <img src="icon.png" width="200">
 
 
 **一个简单易用的 HarmonyOS 设备 UDID 获取工具**
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
 [![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)]()
 
