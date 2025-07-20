@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import platform
 import subprocess
@@ -7,11 +9,16 @@ import tkinter as tk
 from time import sleep
 from tkinter import ttk
 
-# 版本信息 - 直接嵌入到主程序中
-APP_VERSION = "1.0.0"
-APP_AUTHOR = "仙银"
-APP_DESCRIPTION = "HarmonyOS UDID 获取工具"
-APP_COPYRIGHT = "Copyright © 2025 仙银. All rights reserved."
+# 版本信息 - 从 version_info 模块导入
+try:
+    from version_info import VERSION as APP_VERSION, AUTHOR as APP_AUTHOR, DESCRIPTION as APP_DESCRIPTION
+    APP_COPYRIGHT = f"Copyright © 2025 {APP_AUTHOR}. All rights reserved."
+except ImportError:
+    # 如果导入失败，使用默认值
+    APP_VERSION = "1.0.0"
+    APP_AUTHOR = "仙银"
+    APP_DESCRIPTION = "HarmonyOS UDID 获取工具"
+    APP_COPYRIGHT = "Copyright © 2025 仙银. All rights reserved."
 
 
 class HdcUdidApp(tk.Tk):
