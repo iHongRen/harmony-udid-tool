@@ -7,6 +7,12 @@ import tkinter as tk
 from time import sleep
 from tkinter import ttk
 
+# 版本信息 - 直接嵌入到主程序中
+APP_VERSION = "1.0.0"
+APP_AUTHOR = "仙银"
+APP_DESCRIPTION = "HarmonyOS UDID 获取工具"
+APP_COPYRIGHT = "Copyright © 2025 仙银. All rights reserved."
+
 
 class HdcUdidApp(tk.Tk):
     def __init__(self):
@@ -346,15 +352,20 @@ class HdcUdidApp(tk.Tk):
         self.destroy()
 
     def show_about(self):
+        # 直接使用嵌入的版本信息
+        version = APP_VERSION
+        author = APP_AUTHOR
+        description = APP_DESCRIPTION
+        
         about = tk.Toplevel(self)
         about.title("关于")
         about.geometry("320x180")
         about.resizable(False, False)
         
         # 标题
-        tk.Label(about, text="HarmonyOS UDID 获取工具", font=("Arial", 13, "bold")).pack(pady=(20, 5))
-        tk.Label(about, text="版本：v1.0.0", font=("Arial", 11)).pack(pady=2)
-        tk.Label(about, text="作者：@仙银", font=("Arial", 11)).pack(pady=2)
+        tk.Label(about, text=description, font=("Arial", 13, "bold")).pack(pady=(20, 5))
+        tk.Label(about, text=f"版本：v{version}", font=("Arial", 11)).pack(pady=2)
+        tk.Label(about, text=f"作者：@{author}", font=("Arial", 11)).pack(pady=2)
         
         # 链接标签 - 显示为蓝色并添加下划线
         link = tk.Label(

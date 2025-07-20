@@ -9,36 +9,56 @@ import os
 import platform
 import subprocess
 import sys
+from version_info import VERSION, AUTHOR, DESCRIPTION, PRODUCT_NAME, create_version_file
 
 def build_simple():
     """简单的 PyInstaller 打包，避免架构问题"""
+    
+    print(f"📦 开始打包 {PRODUCT_NAME} v{VERSION}")
+    print(f"👤 作者: {AUTHOR}")
+    print(f"📝 描述: {DESCRIPTION}")
     
     cmd = [
         'pyinstaller',
         '--onedir',
         '--windowed',
-        '--name=UDID-Tool',
+        f'--name={PRODUCT_NAME}',
         '--clean',
         '--add-data=hdc:.',
         '--add-data=libusb_shared.dylib:.',
         '--add-data=icon.png:.',
     ]
     
-    # 根据平台添加图标
+    # 根据平台添加图标和版本信息
     if platform.system() == "Darwin":
         cmd.extend(['--icon=icon.icns', '--add-data=icon.icns:.'])
     elif platform.system() == "Windows":
-        cmd.extend(['--icon=icon.ico', '--add-data=icon.ico:.'])
+        # Windows 需要先创建版本信息文件
+        print("🔧 创建 Windows 版本信息文件...")
+        create_version_file()
+        cmd.extend([
+            '--icon=icon.ico', 
+            '--add-data=icon.ico:.',
+            '--version-file=version_info.txt'  # 添加版本信息
+        ])
     
     cmd.append('main.py')
     
-    print("开始简单打包...")
+    print("\n开始打包...")
     print("执行命令:", ' '.join(cmd))
     
     try:
         subprocess.run(cmd, check=True)
         print("\n✅ 打包成功!")
-        print(f"输出目录: dist/UDID-Tool/")
+        print(f"📁 输出目录: dist/{PRODUCT_NAME}/")
+        
+        # 显示版本信息
+        print(f"\n📋 应用信息:")
+        print(f"   名称: {PRODUCT_NAME}")
+        print(f"   版本: {VERSION}")
+        print(f"   作者: {AUTHOR}")
+        print(f"   描述: {DESCRIPTION}")
+        
         return True
     except subprocess.CalledProcessError as e:
         print(f"\n❌ 打包失败: {e}")
