@@ -11,7 +11,9 @@ from tkinter import ttk
 
 # 版本信息 - 从 version_info 模块导入
 try:
-    from version_info import VERSION as APP_VERSION, AUTHOR as APP_AUTHOR, DESCRIPTION as APP_DESCRIPTION
+    from version_info import AUTHOR as APP_AUTHOR
+    from version_info import DESCRIPTION as APP_DESCRIPTION
+    from version_info import VERSION as APP_VERSION
     APP_COPYRIGHT = f"Copyright © 2025 {APP_AUTHOR}. All rights reserved."
 except ImportError:
     # 如果导入失败，使用默认值
@@ -113,6 +115,40 @@ class HdcUdidApp(tk.Tk):
         device_frame = tk.Frame(container, bg=COLOR_BACKGROUND)
         device_frame.pack(fill='x', pady=(0, 8))
         tk.Label(device_frame, text="设备", font=title_font, bg=COLOR_BACKGROUND).pack(side=tk.LEFT)
+        
+        # --- 捐助按钮 ---
+        try:
+            # 确保 donate.png 存在于资源路径中
+            donate_icon_path = self.get_resource_path("donate.png")
+            if os.path.exists(donate_icon_path):
+                original_icon = tk.PhotoImage(file=donate_icon_path)
+                
+                # 创建Label作为按钮，完全去除边框
+                donate_button = tk.Label(
+                    device_frame,
+                    image=original_icon,
+                    bg=COLOR_BACKGROUND,            # 背景色与父容器一致
+                    cursor="hand2"                  # 手型光标
+                )
+                donate_button.pack(side=tk.RIGHT, padx=(5, 0))
+                
+                # 绑定点击事件
+                donate_button.bind("<Button-1>", lambda e: self.open_donate_link())
+                
+                # 添加悬停效果
+                def on_enter(event):
+                    donate_button.config(bg="#e8e8e8")
+                
+                def on_leave(event):
+                    donate_button.config(bg=COLOR_BACKGROUND)
+                
+                donate_button.bind("<Enter>", on_enter)
+                donate_button.bind("<Leave>", on_leave)
+                
+        except tk.TclError:
+            # 如果图片加载失败或不存在，则不显示按钮
+            pass
+
         self.device_combobox = ttk.Combobox(device_frame, state="readonly", font=default_font, style='Rounded.TCombobox')
         self.device_combobox.pack(side=tk.LEFT, fill='x', expand=True, padx=12)
         self.device_combobox.bind("<<ComboboxSelected>>", self.on_device_select)
@@ -354,6 +390,10 @@ class HdcUdidApp(tk.Tk):
         if selected:
             self.clipboard_clear()
             self.clipboard_append(selected)
+
+    def open_donate_link(self):
+        import webbrowser
+        webbrowser.open_new("https://ihongren.github.io/donate.html")
 
     def on_exit(self):
         self.destroy()
