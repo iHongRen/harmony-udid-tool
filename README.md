@@ -20,13 +20,13 @@ HarmonyOS UDID 获取工具是一个跨平台的图形界面应用程序，专�
 
 ## ✨ 功能特性
 
-- 🖥️ **跨平台支持** - 支持 Windows、macOS 和 Linux 系统
-- 🔍 **自动设备检测** - 自动扫描并列出连接的 HarmonyOS 设备
-- 📋 **一键复制** - 支持一键复制 UDID 到剪贴板
-- 🎨 **现代化界面** - 简洁美观的图形用户界面
-- 🔄 **实时刷新** - 支持实时刷新设备列表
-- 📱 **多设备支持** - 同时管理多个连接的设备
-- 🛡️ **安全可靠** - 基于华为官方 HDC 工具，安全可信
+-  **跨平台支持** - 支持 Windows、macOS 和 Linux 系统
+-  **自动设备检测** - 自动扫描并列出连接的 HarmonyOS 设备
+-  **一键复制** - 支持一键复制 UDID 到剪贴板
+-  **现代化界面** - 简洁美观的图形用户界面
+-  **实时刷新** - 支持实时刷新设备列表
+-  **多设备支持** - 同时管理多个连接的设备
+-  **安全可靠** - 基于华为官方 HDC 工具，安全可信
 
 ## 🚀 安装使用
 
@@ -39,65 +39,6 @@ HarmonyOS UDID 获取工具是一个跨平台的图形界面应用程序，专�
    - **Linux**: `HarmonyOS-UDID-Tool-Linux.zip`
 3. 解压并运行应用程序
 
-### 方式二：从源码运行
-
-#### 环境要求
-
-- Python 3.7 或更高版本
-- tkinter（通常随 Python 一起安装）
-
-#### 安装步骤
-
-```bash
-# 克隆仓库
-git clone https://github.com/iHongRen/hdc-uuid-tool.git
-cd hdc-uuid-tool
-
-# 直接运行应用
-python main.py
-
-# 安装打包工具
-pip install pyinstaller
-```
-
-
-
-### 构建可执行文件
-
-使用提供的一键打包脚本：
-
-```bash
-# 一键自动打包（推荐）
-python build_pyinstaller.py
-```
-
-脚本会自动：
-- 🔍 检测你的操作系统
-- 🧹 清理旧的构建文件
-- 📦 选择最适合的打包方式
-- ✅ 验证打包结果
-- 🔧 修复版本信息
-
-#### 打包结果
-
-- 生成 `dist/` 目录
-
-
-### 项目结构
-
-```
-hdc-uuid-tool/
-├── main.py                 # 主程序入口
-├── version_info.py         # 版本信息管理
-├── build_pyinstaller.py    # 一键打包脚本
-├── hdc                     # HDC 可执行文件
-├── libusb_shared.dylib     # macOS 动态库
-├── icon.png                # 应用图标 (PNG)
-├── icon.ico                # Windows 图标
-├── icon.icns               # macOS 图标
-├── README.md               # 项目说明
-└── LICENSE                 # 开源协议
-```
 
 ## 📱 使用说明
 
@@ -133,24 +74,11 @@ hdc-uuid-tool/
 - 检查是否已授权电脑的连接请求
 - 尝试重新连接设备或更换 USB 数据线
 
-### Q: 支持哪些 HarmonyOS 版本？
-
-**A:** 理论上支持所有支持 HDC 调试的 HarmonyOS 版本，包括：
-- HarmonyOS 2.0+
-- HarmonyOS NEXT
-- 其他基于 HarmonyOS 的设备
-
 ### Q: 如何开启 HarmonyOS 开发者模式？
 
-**A:** 
+**A:** 请按以下步骤开启：
 1. 进入"设置" > "关于本机"
 2. 连续点击"软件版本" 7 次
 3. 返回"设置" > "系统" > "开发者选项"
 4. 开启"USB 调试"
 
-
-<div align="center">
-
-**如果这个项目对你有帮助，请给它一个 ⭐️**
-
-</div>
