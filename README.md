@@ -34,11 +34,17 @@ HarmonyOS UDID 获取工具是一个跨平台的图形界面应用程序，专�
 
 ### 方式一：下载预编译版本（推荐）
 
-1. 前往 [Releases](https://github.com/iHongRen/hdc-uuid-tool/releases) 页面，下载适合你系统的版本
+1. 前往 [Releases](https://github.com/iHongRen/harmony-udid-tool/releases) 页面，下载适合你系统的版本。当前只发布了 macOS 版本，其他平台后续发布。
 
 3. 解压并运行应用程序
 
      
+
+### 方式二：源码运行
+
+```sh
+python main.py  
+```
 
 
 
