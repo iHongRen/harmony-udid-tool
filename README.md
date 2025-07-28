@@ -14,16 +14,18 @@
 
 </div>
 
+
+![](./screenshots/app.png)
+
 ## 📖 简介
 
-HarmonyOS UDID 获取工具是一个跨平台的图形界面应用程序，专门用于获取 HarmonyOS 设备的 UDID（Unique Device Identifier）。该工具基于华为官方的 HDC命令行工具，提供了友好的图形界面，让非开发者能够轻松获取设备的唯一标识符。
+HarmonyOS UDID 获取工具是一个跨平台的图形界面应用程序，专门用于获取 HarmonyOS 设备的 UDID。该工具基于华为官方的 HDC命令行工具，提供了友好的图形界面，帮助**非开发者**能够轻松获取鸿蒙设备的 UDID。
 
 ## ✨ 功能特性
 
 -  **跨平台支持** - 支持 Windows、macOS 和 Linux 系统
 -  **自动设备检测** - 自动扫描并列出连接的 HarmonyOS 设备
 -  **一键复制** - 支持一键复制 UDID 到剪贴板
--  **现代化界面** - 简洁美观的图形用户界面
 -  **实时刷新** - 支持实时刷新设备列表
 -  **多设备支持** - 同时管理多个连接的设备
 -  **安全可靠** - 基于华为官方 HDC 工具，安全可信
@@ -32,15 +34,15 @@ HarmonyOS UDID 获取工具是一个跨平台的图形界面应用程序，专�
 
 ### 方式一：下载预编译版本（推荐）
 
-1. 前往 [Releases](https://github.com/iHongRen/hdc-uuid-tool/releases) 页面
-2. 下载适合你系统的版本：
-   - **Windows**: `HarmonyOS-UDID-Tool-Windows.zip`
-   - **macOS**: `HarmonyOS-UDID-Tool-macOS.zip`
-   - **Linux**: `HarmonyOS-UDID-Tool-Linux.zip`
+1. 前往 [Releases](https://github.com/iHongRen/hdc-uuid-tool/releases) 页面，下载适合你系统的版本
+
 3. 解压并运行应用程序
 
+     
 
-## 📱 使用说明
+
+
+## ℹ️ 使用说明
 
 ### 基本操作
 
