@@ -54,6 +54,17 @@ def check_dependencies():
         print("❌ PyInstaller 未安装，请运行: pip install pyinstaller")
         return False
     
+    # macOS 特定依赖检查
+    if platform.system() == "Darwin":
+        # 检查 hdiutil 命令（创建 DMG 包需要）
+        try:
+            subprocess.run(['hdiutil', 'help'], 
+                          capture_output=True, text=True, check=True)
+            print("   hdiutil: 可用")
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("❌ hdiutil 命令不可用，无法创建 DMG 包")
+            return False
+    
     # 检查必要文件
     required_files = ['main.py', 'hdc', 'icon.png']
     if platform.system() == "Darwin":
@@ -225,9 +236,11 @@ def create_app_bundle():
         print("\n✅ .app 包创建成功!")
         
         # 验证 .app 包
-        verify_app_bundle()
+        if verify_app_bundle():
+            # 创建 DMG 包
+            return create_dmg_package()
         
-        return True
+        return False
     except subprocess.CalledProcessError as e:
         print(f"\n❌ .app 包创建失败: {e}")
         return False
@@ -310,6 +323,98 @@ def verify_app_bundle():
     print(f"🎯 主执行文件: {exe_file}")
     
     return True
+
+def create_dmg_package():
+    """创建 macOS .dmg 安装包"""
+    print("\n📦 开始创建 .dmg 安装包...")
+    
+    app_path = Path(f"dist/{PRODUCT_NAME}.app")
+    dmg_name = f"{PRODUCT_NAME}-{VERSION}.dmg"
+    dmg_path = Path(f"dist/{dmg_name}")
+    temp_dmg_dir = Path("dist/dmg_temp")
+    
+    try:
+        # 创建临时目录用于 DMG 内容
+        if temp_dmg_dir.exists():
+            shutil.rmtree(temp_dmg_dir)
+        temp_dmg_dir.mkdir(parents=True)
+        
+        # 复制 .app 到临时目录
+        print("📋 复制 .app 包到临时目录...")
+        shutil.copytree(app_path, temp_dmg_dir / f"{PRODUCT_NAME}.app")
+        
+        # 创建 Applications 文件夹的符号链接
+        print("🔗 创建 Applications 快捷方式...")
+        applications_link = temp_dmg_dir / "Applications"
+        subprocess.run(['ln', '-s', '/Applications', str(applications_link)], check=True)
+        
+        # 删除旧的 DMG 文件（如果存在）
+        if dmg_path.exists():
+            dmg_path.unlink()
+        
+        # 创建 DMG 包
+        print("🔨 创建 DMG 包...")
+        create_dmg_cmd = [
+            'hdiutil', 'create',
+            '-volname', f"{PRODUCT_NAME} {VERSION}",
+            '-srcfolder', str(temp_dmg_dir),
+            '-ov',
+            '-format', 'UDZO',
+            str(dmg_path)
+        ]
+        
+        print(f"命令: {' '.join(create_dmg_cmd)}")
+        subprocess.run(create_dmg_cmd, check=True)
+        
+        # 清理临时目录
+        shutil.rmtree(temp_dmg_dir)
+        
+        # 验证 DMG 包
+        if verify_dmg_package(dmg_path):
+            print(f"\n✅ DMG 包创建成功: {dmg_path}")
+            return True
+        else:
+            return False
+            
+    except subprocess.CalledProcessError as e:
+        print(f"❌ 创建 DMG 包失败: {e}")
+        # 清理临时目录
+        if temp_dmg_dir.exists():
+            shutil.rmtree(temp_dmg_dir)
+        return False
+    except Exception as e:
+        print(f"❌ 创建 DMG 包时发生错误: {e}")
+        # 清理临时目录
+        if temp_dmg_dir.exists():
+            shutil.rmtree(temp_dmg_dir)
+        return False
+
+def verify_dmg_package(dmg_path):
+    """验证 DMG 包"""
+    print("\n🔍 验证 DMG 包...")
+    
+    if not dmg_path.exists():
+        print("❌ DMG 包不存在")
+        return False
+    
+    try:
+        # 检查 DMG 包信息
+        info_cmd = ['hdiutil', 'imageinfo', str(dmg_path)]
+        result = subprocess.run(info_cmd, capture_output=True, text=True, check=True)
+        
+        # 计算 DMG 包大小
+        dmg_size = dmg_path.stat().st_size / (1024 * 1024)
+        
+        print(f"✅ DMG 包验证完成")
+        print(f"📁 DMG 文件: {dmg_path}")
+        print(f"📊 文件大小: {dmg_size:.1f} MB")
+        print(f"💡 安装说明: 双击 DMG 文件，将 {PRODUCT_NAME}.app 拖拽到 Applications 文件夹")
+        
+        return True
+        
+    except subprocess.CalledProcessError as e:
+        print(f"❌ DMG 包验证失败: {e}")
+        return False
 
 def show_build_info():
     """显示构建环境信息"""

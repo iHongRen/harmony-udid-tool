@@ -22,7 +22,7 @@ VERSION_PARTS = VERSION.split('.')
 MAJOR_VERSION = int(VERSION_PARTS[0]) if len(VERSION_PARTS) > 0 else 1
 MINOR_VERSION = int(VERSION_PARTS[1]) if len(VERSION_PARTS) > 1 else 0
 PATCH_VERSION = int(VERSION_PARTS[2]) if len(VERSION_PARTS) > 2 else 0
-BUILD_VERSION = 0
+BUILD_VERSION = 1
 
 def create_version_file():
     """创建 Windows 版本信息文件"""
