@@ -4,7 +4,7 @@
 <img src="icon.png" width="200">
 
 
-**一个简单易用的 HarmonyOS 设备 UDID 获取工具**
+**一个简单易用的 HarmonyOS 设备 UDID 获取工具，帮助测试、产品等非开发者轻松获取鸿蒙设备的 UDID。**
 
 ![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)]()
@@ -17,7 +17,7 @@
 
 ## 📖 简介
 
-HarmonyOS UDID 获取工具是一个跨平台的图形界面应用程序，专门用于获取 HarmonyOS 设备的 UDID。该工具基于华为官方的 HDC命令行工具，提供了友好的图形界面，帮助**非开发者**获取鸿蒙设备的 UDID。
+HarmonyOS UDID 获取工具是一个跨平台的图形界面应用程序，专门用于获取 HarmonyOS 设备的 UDID。该工具基于华为官方的 HDC命令行工具，提供了友好的图形界面。
 
 ## ✨ 功能特性
 
