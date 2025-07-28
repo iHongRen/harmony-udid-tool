@@ -282,7 +282,7 @@ class HdcUdidApp(tk.Tk):
     def fetch_devices_task(self):
         list_stdout, _ = self.run_hdc_command(["list", "targets"])
         device_sns = list_stdout.splitlines()
-        if not device_sns:
+        if not device_sns or  "[Empty]" in list_stdout:
             self.after(0, self.update_device_list, [], "未检测到设备，请连接...")
             return
         self.after(0, self.update_device_list, device_sns, "请从列表中选择一个设备")
@@ -417,7 +417,7 @@ class HdcUdidApp(tk.Tk):
         # 链接标签 - 显示为蓝色并添加下划线
         link = tk.Label(
             about, 
-            text="https://github.com/iHongRen/hdc-uuid-tool", 
+            text="https://github.com/iHongRen/harmonyos-uuid", 
             font=("Arial", 10, "underline"),
             fg="#0057ff",  # 链接蓝
             cursor="hand"  # 鼠标悬停时显示手型
@@ -427,7 +427,7 @@ class HdcUdidApp(tk.Tk):
         # 绑定点击事件 - 使用默认浏览器打开链接
         def open_link(event):
             import webbrowser
-            webbrowser.open_new("https://github.com/iHongRen/hdc-uuid-tool")
+            webbrowser.open_new("https://github.com/iHongRen/harmonyos-uuid")
         
         link.bind("<Button-1>", open_link)
         link.bind("<Enter>", lambda e: link.config(fg="#1e1eff"))  # 鼠标悬停时颜色加深
