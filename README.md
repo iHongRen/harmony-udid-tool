@@ -88,3 +88,6 @@ sudo xattr -dr com.apple.quarantine /Applications/HarmonyOS-UDID-Tool.app
 3. 返回"设置" > "系统" > "开发者选项"
 4. 开启"USB 调试"
 
+
+---
+如果本项目对你有帮助，希望能给个 🌟Star， 给开发者一点反馈。
