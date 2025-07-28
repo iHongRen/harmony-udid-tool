@@ -66,7 +66,7 @@ def check_dependencies():
             return False
     
     # 检查必要文件
-    required_files = ['main.py', 'hdc', 'icon.png']
+    required_files = ['main.py', 'hdc', 'icon.png', 'donate.png']
     if platform.system() == "Darwin":
         required_files.extend(['icon.icns', 'libusb_shared.dylib'])
     elif platform.system() == "Windows":
@@ -107,6 +107,7 @@ def build_simple():
         '--noconfirm',  # 不询问覆盖
         '--add-data=hdc:.',
         '--add-data=icon.png:.',
+        '--add-data=donate.png:.',
     ]
     
     # 根据平台添加特定配置
@@ -167,7 +168,7 @@ def verify_build():
         return False
     
     # 检查资源文件
-    required_resources = ['hdc', 'icon.png']
+    required_resources = ['hdc', 'icon.png', 'donate.png']
     if platform.system() == "Darwin":
         required_resources.extend(['icon.icns', 'libusb_shared.dylib'])
     elif platform.system() == "Windows":
@@ -221,6 +222,7 @@ def create_app_bundle():
         '--icon=icon.icns',
         '--add-data=hdc:.',
         '--add-data=icon.png:.',
+        '--add-data=donate.png:.',
         '--add-data=icon.icns:.',
         '--add-data=libusb_shared.dylib:.',
         # macOS 特定选项

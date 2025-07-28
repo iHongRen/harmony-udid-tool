@@ -121,16 +121,16 @@ class HdcUdidApp(tk.Tk):
             # 确保 donate.png 存在于资源路径中
             donate_icon_path = self.get_resource_path("donate.png")
             if os.path.exists(donate_icon_path):
-                original_icon = tk.PhotoImage(file=donate_icon_path)
-                
+                self.donate_icon = tk.PhotoImage(file=donate_icon_path)  # 保持引用
+
                 # 创建Label作为按钮，完全去除边框
                 donate_button = tk.Label(
                     device_frame,
-                    image=original_icon,
+                    image=self.donate_icon,
                     bg=COLOR_BACKGROUND,            # 背景色与父容器一致
                     cursor="hand2"                  # 手型光标
                 )
-                donate_button.pack(side=tk.RIGHT, padx=(5, 0))
+                donate_button.pack(side=tk.RIGHT, padx=(0, 0))
                 
                 # 绑定点击事件
                 donate_button.bind("<Button-1>", lambda e: self.open_donate_link())
