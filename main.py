@@ -23,6 +23,24 @@ except ImportError:
     APP_COPYRIGHT = "Copyright © 2025 仙银. All rights reserved."
 
 
+def parse_hdc_device_list(list_stdout, list_stderr=None):
+    """Interpret `hdc list targets` output without calling splitlines on None.
+
+    None or empty stdout is treated as a command failure so the UI can leave
+    the refreshing state and surface the hdc error.
+    Returns (device_sns, status).
+    """
+    if list_stdout is None or not str(list_stdout).strip():
+        err = (list_stderr or "").strip() or "hdc 未返回设备列表"
+        return [], f"刷新失败: {err}"
+    if "[Empty]" in list_stdout:
+        return [], "未检测到设备，请连接..."
+    device_sns = [line.strip() for line in list_stdout.splitlines() if line.strip()]
+    if not device_sns:
+        return [], "未检测到设备，请连接..."
+    return device_sns, "请从列表中选择一个设备"
+
+
 class HdcUdidApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -270,6 +288,7 @@ class HdcUdidApp(tk.Tk):
         except Exception as e:
             print(f"Error running command: {command} - {e}")
             return None, str(e)
+
     def refresh_devices(self):
         self.status_value.set("正在刷新设备列表...")
         # self.device_combobox.set('')
@@ -280,12 +299,12 @@ class HdcUdidApp(tk.Tk):
         threading.Thread(target=self.fetch_devices_task, daemon=True).start()
 
     def fetch_devices_task(self):
-        list_stdout, _ = self.run_hdc_command(["list", "targets"])
-        device_sns = list_stdout.splitlines()
-        if not device_sns or  "[Empty]" in list_stdout:
-            self.after(0, self.update_device_list, [], "未检测到设备，请连接...")
-            return
-        self.after(0, self.update_device_list, device_sns, "请从列表中选择一个设备")
+        try:
+            list_stdout, list_stderr = self.run_hdc_command(["list", "targets"])
+            device_sns, status = parse_hdc_device_list(list_stdout, list_stderr)
+            self.after(0, self.update_device_list, device_sns, status)
+        except Exception as e:
+            self.after(0, self.update_device_list, [], f"刷新失败: {e}")
 
     def update_device_list(self, device_names, status):
         # 记录当前选中项
@@ -303,7 +322,10 @@ class HdcUdidApp(tk.Tk):
             # 只有真正没有设备时才清空
             self.device_combobox.set('')
             self.device_combobox.config(state="disabled")
-            self.update_ui_text("未检测到设备")
+            if status.startswith("刷新失败"):
+                self.update_ui_text("刷新失败")
+            else:
+                self.update_ui_text("未检测到设备")
         self.status_value.set(status)
         self.refresh_button.config(state=tk.NORMAL)
 
@@ -320,11 +342,17 @@ class HdcUdidApp(tk.Tk):
         self.focus()  # 让 Combobox 失去焦点
 
     def fetch_udid_task(self, selected_display_name):
-        udid_stdout, udid_stderr = self.run_hdc_command(["-t", selected_display_name, "shell", "bm", "get", "-u"])
-        final_udid, final_status = self.parse_udid(udid_stdout, udid_stderr)
-        self.after(0, self.update_udid_display, final_udid, final_status)
+        try:
+            udid_stdout, udid_stderr = self.run_hdc_command(
+                ["-t", selected_display_name, "shell", "bm", "get", "-u"]
+            )
+            final_udid, final_status = self.parse_udid(udid_stdout, udid_stderr)
+            self.after(0, self.update_udid_display, final_udid, final_status)
+        except Exception as e:
+            self.after(0, self.update_udid_display, "获取UDID失败", f"错误: {e}")
 
     def parse_udid(self, stdout, stderr):
+        stderr = stderr or ""
         if stdout and "udid" in stdout.lower():
             try:
                 udid = stdout.split(':', 1)[1].strip()
@@ -339,8 +367,9 @@ class HdcUdidApp(tk.Tk):
         else:
             if "not found" in stderr.lower():
                 return "获取UDID失败", "错误: 设备上未找到 'bm' 工具。"
-            else:
-                return "获取UDID失败", "错误: 请确保设备已解锁且HDC已授权。"
+            if stderr.strip():
+                return "获取UDID失败", f"错误: {stderr.strip()}"
+            return "获取UDID失败", "错误: 请确保设备已解锁且HDC已授权。"
 
     def update_udid_display(self, udid, status):
         self.update_ui_text(udid)
