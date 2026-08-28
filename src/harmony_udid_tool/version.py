@@ -8,7 +8,7 @@ import os
 import platform
 
 # 应用程序基本信息
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 AUTHOR = "仙银"
 PRODUCT_NAME = "HarmonyOS-UDID-Tool"
 DESCRIPTION = "HarmonyOS UDID 获取工具"

@@ -17,7 +17,7 @@ try:
     APP_COPYRIGHT = f"Copyright © 2025 {APP_AUTHOR}. All rights reserved."
 except ImportError:
     # 如果导入失败，使用默认值
-    APP_VERSION = "1.0.0"
+    APP_VERSION = "1.1.0"
     APP_AUTHOR = "仙银"
     APP_DESCRIPTION = "HarmonyOS UDID 获取工具"
     APP_COPYRIGHT = "Copyright © 2025 仙银. All rights reserved."
