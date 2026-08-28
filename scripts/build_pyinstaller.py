@@ -129,7 +129,6 @@ def build_simple():
         ])
     elif platform.system() == "Windows":
         # Windows 需要先创建版本信息文件
-        print("🔧 创建 Windows 版本信息文件...")
         create_version_file()
         cmd.extend([
             '--icon=resources/icon.ico',
@@ -342,7 +341,7 @@ def create_dmg_package():
     print("\n📦 开始创建 .dmg 安装包...")
     
     app_path = Path(f"dist/{PRODUCT_NAME}.app")
-    dmg_name = f"{PRODUCT_NAME}-{VERSION}.dmg"
+    dmg_name = f"{PRODUCT_NAME}.dmg"
     dmg_path = Path(f"dist/{dmg_name}")
     temp_dmg_dir = Path("dist/dmg_temp")
     

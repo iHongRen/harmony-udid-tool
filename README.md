@@ -94,7 +94,7 @@ python3 scripts/build_pyinstaller.py
 脚本会自动检查依赖、清理旧的 `build/` 和 `dist/` 目录，并生成：
 
 - `dist/HarmonyOS-UDID-Tool.app` - macOS 应用包
-- `dist/HarmonyOS-UDID-Tool-<版本号>.dmg` - macOS 安装镜像
+- `dist/HarmonyOS-UDID-Tool.dmg` - macOS 安装镜像
 
 打包依赖 macOS 系统自带的 `hdiutil`。当前构建脚本会根据运行平台自动选择打包方式。
 
