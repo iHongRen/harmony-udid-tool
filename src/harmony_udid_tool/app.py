@@ -1,17 +1,4 @@
-"""Compatibility entry point for launching the application from the project root."""
-
-import sys
-from pathlib import Path
-
-SRC_DIR = Path(__file__).resolve().parent / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from harmony_udid_tool.app import HdcUdidApp
-
-if __name__ == "__main__":
-    app = HdcUdidApp()
-    app.mainloop()# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import platform
@@ -19,14 +6,14 @@ import subprocess
 import sys
 import threading
 import tkinter as tk
+from pathlib import Path
 from time import sleep
 from tkinter import ttk
 
-# 版本信息 - 从 version_info 模块导入
 try:
-    from version_info import AUTHOR as APP_AUTHOR
-    from version_info import DESCRIPTION as APP_DESCRIPTION
-    from version_info import VERSION as APP_VERSION
+    from .version import AUTHOR as APP_AUTHOR
+    from .version import DESCRIPTION as APP_DESCRIPTION
+    from .version import VERSION as APP_VERSION
     APP_COPYRIGHT = f"Copyright © 2025 {APP_AUTHOR}. All rights reserved."
 except ImportError:
     # 如果导入失败，使用默认值
@@ -226,12 +213,10 @@ class HdcUdidApp(tk.Tk):
     def get_resource_path(self, relative_path):
         """获取资源文件的绝对路径，兼容 PyInstaller 打包"""
         try:
-            # PyInstaller 打包后的临时目录
-            base_path = sys._MEIPASS
+            base_path = Path(sys._MEIPASS)
         except AttributeError:
-            # 开发环境
-            base_path = os.path.dirname(os.path.abspath(__file__))
-        return os.path.join(base_path, relative_path)
+            base_path = Path(__file__).resolve().parents[2] / "resources"
+        return str(base_path / relative_path)
 
     def set_app_icon(self):
         """跨平台设置应用图标"""
@@ -349,10 +334,6 @@ class HdcUdidApp(tk.Tk):
             self.copy_button.config(state=tk.DISABLED)
             self.update_ui_text("...")
             threading.Thread(target=self.fetch_udid_task, args=(selected_display_name,), daemon=True).start()
-        # 取消 Combobox 的选中高亮
-        self.device_combobox.selection_clear()
-        self.device_combobox.icursor(0)
-        self.focus()  # 让 Combobox 失去焦点
 
     def fetch_udid_task(self, selected_display_name):
         try:

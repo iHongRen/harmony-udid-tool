@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """Host-runnable hdc refresh tests. No Harmony device required."""
 
+import tkinter as tk
 from unittest.mock import MagicMock
 
-import tkinter as tk
-
-from main import HdcUdidApp, parse_hdc_device_list
+from harmony_udid_tool.app import HdcUdidApp, parse_hdc_device_list
 
 
 class FakeVar:
@@ -74,3 +73,16 @@ def test_failed_udid_fetch_surfaces_hdc_error():
     assert app.status_value.get() != "正在刷新设备列表..."
     assert "hdc missing" in app.status_value.get()
     assert "失败" in app.udid_text_value
+
+
+def test_closing_device_dropdown_keeps_current_selection():
+    app = _make_app()
+    app.device_combobox.get.return_value = "DEVICE123"
+    app.fetch_udid_task = MagicMock()
+    app.focus = MagicMock()
+
+    HdcUdidApp.on_device_select(app, None)
+
+    assert app.device_combobox.get() == "DEVICE123"
+    app.device_combobox.selection_clear.assert_not_called()
+    app.device_combobox.icursor.assert_not_called()
